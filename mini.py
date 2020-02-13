@@ -92,9 +92,21 @@ rmse = np.sqrt(metrics.mean_squared_error(pred,y_test))
 print(rmse)
 
 
-
-
-
+plt.figure(figsize = (14,10))
+sns.set(palette = "viridis")
+sns.set_style("white")
+sns.distplot(data = data["test"],
+             label = "test values",
+             kde = False,
+             bins = 500, # can play with this 
+             hist_kws = {"edgecolor" : 'none', "alpha" : 0.7 })
+sns.distplot(data = data["pred"],
+             label = "test values",
+             kde = False,
+             bins = 500, # can play with this 
+             hist_kws = {"edgecolor" : 'none', "alpha" : 0.7 })
+plt.legend(["Actual Values", "Predicted Values"])
+plt.show()
 
 
 
