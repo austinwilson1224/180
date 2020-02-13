@@ -18,6 +18,7 @@ import io
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 
 # the original data is stored in review.json
@@ -63,18 +64,38 @@ y = df3.iloc[:,1].values
 
 #
 #
-#    THERE COULD BE AN ERROR IN HERE BUDDY
+#    
 #
 #
 #
 
-x_train, y_train, x_test, y_test = train_test_split(x, y, test_size=.25, random_state=42)
-model = Sequential()
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=.25, random_state=42)
 # first hidden last has to have input matching the dimension of a row in x
-model.add(Dense(25, input_dim = x.shape[1], activation='relu'))
-model.add(Dense(10, activation='relu'))
-model.add(Dense(1))
-model.compile(loss='mean_squared_error', optimizer='adam')
-# below line doesnt work, accidently put
-# model.fit(x,y,verbose=2,epochs=100)
-# model.fit(x_train,y_train, validation_data=(x_test,y_test), callbacks=[monitor], verbose=2, epochs = 1000)
+
+checkpointer = ModelCheckpoint(filepath="dnn/best_weights.hdf5", verbose=0, save_best_only=True)
+
+# for loop to re-initialize models to avoid local optimum
+
+for i in range(5):
+    model = Sequential()
+    model.add(Dense(25, input_dim = x.shape[1], activation='relu'))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dense(1))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+    monitor = EarlyStopping(monitor='val_loss', min_delta=1e-3, patience=2, verbose=2, mode='auto')
+    model.fit(x_train, y_train, validation_data=(x_test, y_test), callbacks=[monitor, checkpointer], verbose=2, epochs=10)
+
+
+# now to 
+pred = model.predict(x_test)
+rmse = np.sqrt(metrics.mean_squared_error(pred,y_test))
+print(rmse)
+
+
+
+
+
+
+
+
+
